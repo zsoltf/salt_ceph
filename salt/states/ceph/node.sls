@@ -1,7 +1,12 @@
+{% set cluster_mine = salt['mine.get']('app:ceph', 'ip', 'grain') | dictsort() %}
+
 ntpsec:
   pkg.installed: []
 
 openssh-server:
+  pkg.installed: []
+
+python-minimal:
   pkg.installed: []
 
 ceph-admin-user:
@@ -14,15 +19,29 @@ ceph-admin-user:
       - admin
       - sudo
 
-# ceph-admin passwordless sudo
+ceph-admin-sudo:
+  file.managed:
+    - name: /etc/sudoers.d/ceph-admin
+    - contents: ceph-admin ALL = (root) NOPASSWD:ALL
+    - mode: 440
 
 ceph-admin-ssh-auth:
   ssh_auth.present:
     - name: ceph admin key
     - user: ceph-admin
     - enc: ssh-rsa
-    - source: salt://minionfs/ceph-admin/id_rsa.pub
+    - source: salt://minionfs/ceph-admin/home/ceph-admin/.ssh/id_rsa.pub
     - require:
       - user: ceph-admin-user
 
-# ssh config
+{% for name, ips in cluster_mine %}
+
+ceph-etc_hosts_{{ name }}:
+  host.present:
+    - name: {{ name }}
+    - ip: {{ ips|first }}
+    - clean: True
+    - require:
+        - user: ceph-admin-user
+
+{% endfor %}
