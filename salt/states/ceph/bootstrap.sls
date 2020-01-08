@@ -1,4 +1,4 @@
-{% set cluster_mine = salt['mine.get']('app:ceph', 'ip', 'grain') | dictsort() %}
+{% set cluster_mine = salt['mine.get']('ceph:role', 'test.ping', 'grain') | dictsort() %}
 
 include:
   - .repo
@@ -16,7 +16,6 @@ ceph-admin-user:
     - shell: /bin/bash
     - home: /home/ceph-admin
     - groups:
-      - admin
       - sudo
 
 generate-admin-key:
@@ -25,7 +24,7 @@ generate-admin-key:
     - runas: ceph-admin
     - creates:
       - /home/ceph-admin/.ssh/id_rsa.pub
-      - /home/ceph-admin/.ssh/id_rsa.key
+      - /home/ceph-admin/.ssh/id_rsa
     - require:
         - user: ceph-admin-user
 
@@ -37,7 +36,7 @@ push-admin-pub-key:
         - cmd: generate-admin-key
 
 
-{% for name, ips in cluster_mine %}
+{% for name, _ in cluster_mine %}
 
 ceph-admin-known-host_{{ name }}:
   cmd.run:

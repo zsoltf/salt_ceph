@@ -5,11 +5,9 @@
 {% set osds = osd_nodes|map('first')|join(' ') %}
 {% set all = mons + ' ' + osds %}
 
-testo:
-  test.nop:
-    - mons: {{ mons }}
-    - osds: {{ osds }}
-    - all: {{ mons + ' ' + osds }}
+#TODO: move to pillar
+{% set public_network = '10.130.1.0/24' %}
+{% set ceph_release = 'nautilus' %}
 
 ceph-common:
   pkg.installed: []
@@ -21,7 +19,7 @@ ceph-cluster-dir:
 
 ceph-cluster-new:
   cmd.run:
-    - name: ceph-deploy new {{ mons }}
+    - name: ceph-deploy new {{ mons }} --public-network {{ public_network }}
     - cwd: /home/ceph-admin/ceph
     - runas: ceph-admin
     - require:
@@ -31,7 +29,7 @@ ceph-cluster-new:
 
 ceph-cluster-install:
   cmd.run:
-    - name: ceph-deploy install {{ all }}
+    - name: ceph-deploy install --release {{ ceph_release }} {{ all }}
     - cwd: /home/ceph-admin/ceph
     - runas: ceph-admin
     - require:
