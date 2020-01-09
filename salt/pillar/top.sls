@@ -4,6 +4,6 @@ base:
     - test
     - ip-mine
 
-  'app:ceph':
+  'ceph:role':
     - match: grain
     - ceph

@@ -1,5 +1,4 @@
-{% set cluster_mine = salt['mine.get']('ceph:role', 'ip', 'grain') | dictsort() %}
-{% set cluster_admin = salt['mine.get']('ceph:role:admin', 'test.ping', 'grain') | first %}
+{% set deploy_node = salt['mine.get']('ceph:role:deploy', 'test.ping', 'grain') | first %}
 
 ntpsec:
   pkg.installed: []
@@ -30,18 +29,6 @@ ceph-admin-ssh-auth:
     - name: ceph admin key
     - user: ceph-admin
     - enc: ssh-rsa
-    - source: salt://minionfs/{{ cluster_admin }}/home/ceph-admin/.ssh/id_rsa.pub
+    - source: salt://minionfs/{{ deploy_node }}/home/ceph-admin/.ssh/id_rsa.pub
     - require:
       - user: ceph-admin-user
-
-{% for name, ips in cluster_mine %}
-
-ceph-etc_hosts_{{ name }}:
-  host.present:
-    - name: {{ name }}.fiber
-    - ip: {{ ips|first }}
-    - clean: True
-    - require:
-        - user: ceph-admin-user
-
-{% endfor %}

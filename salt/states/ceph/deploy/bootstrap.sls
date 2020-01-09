@@ -1,7 +1,7 @@
 {% set cluster_mine = salt['mine.get']('ceph:role', 'test.ping', 'grain') | dictsort() %}
 
 include:
-  - .repo
+  - ceph.repo
 
 ceph-deploy:
   pkg.installed:
@@ -39,10 +39,10 @@ push-admin-pub-key:
 {% for name, _ in cluster_mine %}
 
 ceph-admin-known-host_{{ name }}:
-  cmd.run:
+  cmd.wait:
     - name: ssh-keyscan -H {{ name }} >> ~/.ssh/known_hosts
     - runas: ceph-admin
-    - require:
+    - watch:
         - user: ceph-admin-user
 
 {% endfor %}
